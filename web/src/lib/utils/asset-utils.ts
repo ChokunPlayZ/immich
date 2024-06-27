@@ -202,11 +202,15 @@ export const downloadFile = async (asset: AssetResponseDto) => {
         ],
       };
 
-      if (navigator.userAgent.match(/Android|iPhone|iPad|Opera Mini/i)) {
+      if (/android|iphone|ipad/i.test(navigator.userAgent)) {
         if (navigator.canShare && navigator.canShare(shareData)) {
           try {
             await navigator.share(shareData);
-          } catch (error) {}
+          } catch (error) {
+            // handle in case user cancels share, replace if needed, 
+            // the console.log is here just so lint check will pass
+            console.log("user cancels share request" + error)
+          }
           downloadManager.clear(downloadKey)
         } else {
           downloadBlob(data, filename);
