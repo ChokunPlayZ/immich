@@ -194,7 +194,26 @@ export const downloadFile = async (asset: AssetResponseDto) => {
         onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded, event.total),
       });
 
-      downloadBlob(data, filename);
+      const shareData = {
+        files: [
+          new File([data], filename, {
+            type: data.type,
+          }),
+        ],
+      };
+
+      if (navigator.userAgent.match(/Android|iPhone|iPad|Opera Mini/i)) {
+        if (navigator.canShare && navigator.canShare(shareData)) {
+          try {
+            await navigator.share(shareData);
+          } catch (error) {}
+          downloadManager.clear(downloadKey)
+        } else {
+          downloadBlob(data, filename);
+        }
+      } else {
+        downloadBlob(data, filename);
+      }
     } catch (error) {
       handleError(error, $t('errors.error_downloading', { values: { filename: filename } }));
       downloadManager.clear(downloadKey);
